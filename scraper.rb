@@ -14,6 +14,7 @@ root_url = "https://tracking.wollondilly.nsw.gov.au"
 url = "#{root_url}/api/app"
 
 agent = Mechanize.new
+agent.verify_mode = OpenSSL::SSL::VERIFY_NONE
 page = agent.get(url)
 
 result = JSON.parse(page.body)
