@@ -15,7 +15,7 @@ url = "#{root_url}/api/app"
 
 
 agent = Mechanize.new
-agent.verify_mode = OpenSSL::SSL::VERIFY_NONE
+# agent.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
 if ENV["MORPH_AUSTRALIAN_PROXY"]
   # On morph.io set the environment variable MORPH_AUSTRALIAN_PROXY to
