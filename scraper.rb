@@ -10,6 +10,8 @@ def parse_date(s)
   end
 end
 
+ENV["MORPH_AUSTRALIAN_PROXY"] = "http://morph:8u1BcKa1GL0bRGpgFxUd@au.proxy.oaf.org.au:8888"
+
 root_url = "https://tracking.wollondilly.nsw.gov.au"
 url = "#{root_url}/api/app"
 
@@ -29,7 +31,7 @@ result = JSON.parse(page.body)
 
 result.each do |a|
   date_received = parse_date(a["rec_dte"])
-  if date_received >= Date.today - 30
+  if date_received and date_received >= Date.today - 30
     record = {
       "council_reference" => a["fmt_acc2"],
       "address" => a["prm_adr"] + ", NSW",
