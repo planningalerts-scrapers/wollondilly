@@ -13,9 +13,6 @@ end
 root_url = "https://tracking.wollondilly.nsw.gov.au"
 url = "#{root_url}/api/app"
 
-ENV["MORPH_AUSTRALIAN_PROXY"] = "http://morph:8u1BcKa1GL0bRGpgFxUd@au.proxy.oaf.org.au:8888"
-
-
 agent = Mechanize.new
 # agent.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
