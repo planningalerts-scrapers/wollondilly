@@ -20,6 +20,7 @@ class Scraper
   def self.run
     root_url = "https://tracking.wollondilly.nsw.gov.au"
     url = "#{root_url}/api/app"
+    count = 0
 
     agent = Mechanize.new
 
@@ -39,9 +40,11 @@ class Scraper
       date_received = parse_date(a["rec_dte"])
       next unless date_received && date_received >= Date.today - 30
 
+      address = a['prm_adr']
+      address = "#{address} NSW" unless address.include?("NSW")
       record = {
         "council_reference" => a["fmt_acc2"],
-        "address" => "#{a['prm_adr']}, NSW",
+        "address" => address,
         "description" => a["precis"].strip,
         "info_url" => "#{root_url}/detail/#{a['fmt_acc']}",
         "date_scraped" => Date.today.to_s,
@@ -52,8 +55,10 @@ class Scraper
         "lng" => a["lon"],
       }
       puts "Storing #{record['council_reference']} - #{record['address']}"
+      count += 1
       ScraperWiki.save_sqlite(["council_reference"], record)
     end
+    puts "Finished - processed #{count} records"
   end
 end
 
