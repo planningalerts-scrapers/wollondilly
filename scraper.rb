@@ -1,49 +1,60 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Bundler.require
+
 require "mechanize"
 require "json"
 require "scraperwiki"
 
-def parse_date(s)
-  if s.strip == ""
-    nil
-  else
-    Date.strptime(s, "%d/%m/%Y")
+# Main Scraper class
+class Scraper
+  def self.parse_date(s)
+    if s.strip == ""
+      nil
+    else
+      Date.strptime(s, "%d/%m/%Y")
+    end
+  end
+
+  def self.run
+    root_url = "https://tracking.wollondilly.nsw.gov.au"
+    url = "#{root_url}/api/app"
+
+    agent = Mechanize.new
+
+    if ENV["MORPH_AUSTRALIAN_PROXY"]
+      # On morph.io set the environment variable MORPH_AUSTRALIAN_PROXY to
+      # http://morph:password@au.proxy.oaf.org.au:8888 replacing password with
+      # the real password.
+      puts "Using Australian proxy..."
+      agent.agent.set_proxy(ENV["MORPH_AUSTRALIAN_PROXY"])
+    end
+
+    page = agent.get(url)
+
+    result = JSON.parse(page.body)
+
+    result.each do |a|
+      date_received = parse_date(a["rec_dte"])
+      next unless date_received && date_received >= Date.today - 30
+
+      record = {
+        "council_reference" => a["fmt_acc2"],
+        "address" => "#{a['prm_adr']}, NSW",
+        "description" => a["precis"].strip,
+        "info_url" => "#{root_url}/detail/#{a['fmt_acc']}",
+        "date_scraped" => Date.today.to_s,
+        "date_received" => date_received.to_s,
+        "on_notice_from" => parse_date(a["not_opn_dte"]),
+        "on_notice_to" => parse_date(a["not_clo_dte"]),
+        "lat" => a["lat"],
+        "lng" => a["lon"],
+      }
+      puts "Storing #{record['council_reference']} - #{record['address']}"
+      ScraperWiki.save_sqlite(["council_reference"], record)
+    end
   end
 end
 
-root_url = "https://tracking.wollondilly.nsw.gov.au"
-url = "#{root_url}/api/app"
-
-agent = Mechanize.new
-
-if ENV["MORPH_AUSTRALIAN_PROXY"]
-  # On morph.io set the environment variable MORPH_AUSTRALIAN_PROXY to
-  # http://morph:password@au.proxy.oaf.org.au:8888 replacing password with
-  # the real password.
-  puts "Using Australian proxy..."
-  agent.agent.set_proxy(ENV["MORPH_AUSTRALIAN_PROXY"])
-end
-
-page = agent.get(url)
-
-
-result = JSON.parse(page.body)
-
-result.each do |a|
-  date_received = parse_date(a["rec_dte"])
-  if date_received && date_received >= Date.today - 30
-    record = {
-      "council_reference" => a["fmt_acc2"],
-      "address" => a["prm_adr"] + ", NSW",
-      "description" => a["precis"].strip,
-      "info_url" => "#{root_url}/detail/#{a['fmt_acc']}",
-      "date_scraped" => Date.today.to_s,
-      "date_received" => date_received.to_s,
-      "on_notice_from" => parse_date(a["not_opn_dte"]),
-      "on_notice_to" => parse_date(a["not_clo_dte"]),
-      "lat" => a["lat"],
-      "lng" => a["lon"]
-    }
-    puts "Storing #{record["council_reference"]} - #{record["address"]}"
-    ScraperWiki.save_sqlite(["council_reference"], record)
-  end
-end
+Scraper.run if __FILE__ == $PROGRAM_NAME
