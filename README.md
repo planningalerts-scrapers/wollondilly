@@ -4,6 +4,16 @@ This is a scraper that runs on [Morph](https://morph.io). To get started [see th
 
 Add any issues to https://github.com/planningalerts-scrapers/issues/issues
 
+## Expected Output
+
+    Storing S68/2026/29/1 - 2 Jan Street PICTON NSW
+    Storing S68/2026/30/1 - 350 Spring Creek Road MOUNT HUNTER NSW
+    ...
+    Storing CDC/2026/158/1 - 50 Koolahs Street APPIN NSW
+    Storing CDC/2026/161/1 - 4 Joseph Lane WILTON NSW
+    Finished - processed 133 records
+
+Expected runtime: ~ 10 seconds
 
 ## To run the scraper
 
